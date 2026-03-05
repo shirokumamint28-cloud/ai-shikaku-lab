@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI資格ラボ | G検定・DS検定・AI検定 合格サポート</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --surface: #0d1117;
+    --surface2: #161b27;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --glow: 0 0 30px rgba(0,229,255,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(5,8,16,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,229,255,0.1);
+    padding: 0 40px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-shadow: var(--glow);
+  }
+
+  .logo span { color: var(--text); }
+
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 32px;
+  }
+
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+
+  nav a:hover { color: var(--accent); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: var(--bg) !important;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    transition: box-shadow 0.2s !important;
+  }
+
+  .nav-cta:hover { box-shadow: var(--glow); color: var(--bg) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 100px 80px 80px;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .hero-orb {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    right: -100px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: radial-gradient(circle, rgba(124,58,237,0.2) 0%, rgba(0,229,255,0.05) 50%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translateY(-50%) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-50%) scale(1.1); opacity: 1; }
+  }
+
+  .hero-content { max-width: 680px; position: relative; z-index: 2; }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 32px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: blink 1.5s ease infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .hero h1 {
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero h1 .line1 { display: block; color: var(--text); }
+  .hero h1 .line2 {
+    display: block;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    margin-top: 24px;
+    font-size: 17px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+
+  .hero-actions {
+    margin-top: 48px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    animation: fadeUp 0.8s 0.6s ease both;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    padding: 14px 32px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 0 40px rgba(0,229,255,0.5);
+    transform: translateY(-2px);
+  }
+
+  .btn-ghost {
+    color: var(--text-muted);
+    padding: 14px 24px;
+    font-size: 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    background: transparent;
+  }
+
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .hero-stats {
+    margin-top: 64px;
+    display: flex;
+    gap: 48px;
+    animation: fadeUp 0.8s 0.8s ease both;
+  }
+
+  .stat-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 32px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── SECTION COMMON ── */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 100px 80px;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1.8;
+    max-width: 560px;
+  }
+
+  /* ── SHIKAKU CARDS ── */
+  .shikaku-section { background: var(--surface); }
+
+  .shikaku-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 56px;
+  }
+
+  .shikaku-card {
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 32px;
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shikaku-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: scaleX(0);
+    transition: transform 0.3s;
+    transform-origin: left;
+  }
+
+  .shikaku-card:hover::before { transform: scaleX(1); }
+  .shikaku-card:hover { border-color: rgba(0,229,255,0.2); transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+
+  .card-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 12px;
+  }
+
+  .tag-hot { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  .tag-new { background: rgba(16,185,129,0.15); color: var(--accent3); border: 1px solid rgba(16,185,129,0.3); }
+  .tag-popular { background: rgba(0,229,255,0.1); color: var(--accent); border: 1px solid rgba(0,229,255,0.2); }
+
+  .card-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .card-sub { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  .card-meta {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .card-meta strong { color: var(--accent); font-family: 'Space Mono', monospace; }
+
+  /* ── ROADMAP ── */
+  .roadmap-section { background: var(--bg); }
+
+  .roadmap-steps {
+    margin-top: 56px;
+    position: relative;
+  }
+
+  .roadmap-line {
+    position: absolute;
+    left: 28px;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent), var(--accent2), transparent);
+  }
+
+  .roadmap-step {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 48px;
+    position: relative;
+    padding-left: 80px;
+    align-items: flex-start;
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slideIn 0.5s ease forwards;
+  }
+
+  .roadmap-step:nth-child(2) { animation-delay: 0.15s; }
+  .roadmap-step:nth-child(3) { animation-delay: 0.3s; }
+  .roadmap-step:nth-child(4) { animation-delay: 0.45s; }
+  .roadmap-step:nth-child(5) { animation-delay: 0.6s; }
+
+  @keyframes slideIn { to { opacity:1; transform:translateX(0); } }
+
+  .step-num {
+    position: absolute;
+    left: 0;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(0,229,255,0.2);
+  }
+
+  .step-content {
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px 28px;
+    flex: 1;
+  }
+
+  .step-period {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .step-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .step-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+
+  .step-tags {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .step-tag {
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.15);
+    color: var(--accent);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+
+  /* ── AI FEATURE ── */
+  .ai-section { background: var(--surface); }
+
+  .ai-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    margin-top: 56px;
+  }
+
+  .ai-features { display: flex; flex-direction: column; gap: 24px; }
+
+  .ai-feature {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 24px;
+    background: var(--surface2);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: border-color 0.2s;
+  }
+
+  .ai-feature:hover { border-color: rgba(0,229,255,0.2); }
+
+  .feat-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .feat-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .feat-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* AI CHAT MOCKUP */
+  .ai-chat-mockup {
+    background: var(--surface2);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 60px rgba(0,229,255,0.05);
+  }
+
+  .chat-header {
+    background: rgba(0,229,255,0.05);
+    border-bottom: 1px solid rgba(0,229,255,0.1);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .chat-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .chat-name { font-size: 14px; font-weight: 700; }
+  .chat-status { font-size: 11px; color: var(--accent3); }
+
+  .chat-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+
+  .msg {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .msg.user { flex-direction: row-reverse; }
+
+  .msg-bubble {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .msg.ai .msg-bubble {
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 4px 12px 12px 12px;
+  }
+
+  .msg.user .msg-bubble {
+    background: rgba(124,58,237,0.2);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 12px 4px 12px 12px;
+  }
+
+  .msg-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .msg.ai .msg-avatar { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+  .msg.user .msg-avatar { background: rgba(124,58,237,0.3); }
+
+  .typing {
+    display: flex;
+    gap: 4px;
+    padding: 8px 0;
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: typeDot 1.2s ease infinite;
+  }
+
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typeDot { 0%,100%{opacity:0.2;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
+
+  /* ── PRICING ── */
+  .pricing-section { background: var(--bg); }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 56px;
+    align-items: start;
+  }
+
+  .pricing-card {
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 36px;
+    transition: all 0.3s;
+  }
+
+  .pricing-card.featured {
+    border-color: var(--accent);
+    box-shadow: 0 0 40px rgba(0,229,255,0.1), inset 0 0 60px rgba(0,229,255,0.02);
+    transform: scale(1.04);
+  }
+
+  .plan-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .plan-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .plan-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+
+  .plan-price {
+    font-family: 'Space Mono', monospace;
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .plan-price span { font-size: 16px; color: var(--text-muted); }
+  .plan-period { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; }
+
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+
+  .plan-features li {
+    font-size: 14px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .plan-features li::before {
+    content: '✓';
+    color: var(--accent3);
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .plan-features li.disabled { opacity: 0.4; }
+  .plan-features li.disabled::before { content: '✕'; color: var(--text-muted); }
+
+  /* ── CTA SECTION ── */
+  .cta-section {
+    background: linear-gradient(135deg, rgba(0,229,255,0.05), rgba(124,58,237,0.05));
+    border-top: 1px solid rgba(0,229,255,0.1);
+    text-align: center;
+    padding: 120px 80px;
+  }
+
+  .cta-section .section-title { font-size: 48px; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 40px 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-copy { font-size: 13px; color: var(--text-muted); }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    section { padding: 60px 24px; }
+    nav { padding: 0 20px; }
+    nav ul { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    .hero-orb { display: none; }
+    .shikaku-grid, .pricing-grid { grid-template-columns: 1fr; }
+    .ai-grid { grid-template-columns: 1fr; gap: 40px; }
+    .pricing-card.featured { transform: none; }
+    footer { flex-direction: column; gap: 16px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">AI<span>資格</span>LAB</div>
+  <ul>
+    <li><a href="#shikaku">資格一覧</a></li>
+    <li><a href="#roadmap">ロードマップ</a></li>
+    <li><a href="#ai">AI学習</a></li>
+    <li><a href="#pricing">料金</a></li>
+    <li><a href="#" class="nav-cta">無料で始める</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-orb"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      AI-POWERED LEARNING PLATFORM
+    </div>
+    <h1>
+      <span class="line1">AIで学んで、</span>
+      <span class="line2">AI資格を取る。</span>
+    </h1>
+    <p class="hero-sub">
+      G検定・DS検定・AI検定に特化した学習プラットフォーム。<br>
+      AIが過去問を解説し、あなただけのロードマップを自動生成します。
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary">🚀 無料で学習を始める</button>
+      <button class="btn-ghost">▶ デモを見る</button>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">3,200+</div>
+        <div class="stat-label">過去問データ</div>
+      </div>
+      <div>
+        <div class="stat-num">87%</div>
+        <div class="stat-label">合格率</div>
+      </div>
+      <div>
+        <div class="stat-num">12,000+</div>
+        <div class="stat-label">学習ユーザー</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 資格一覧 -->
+<section class="shikaku-section" id="shikaku">
+  <p class="section-label">CERTIFICATIONS</p>
+  <h2 class="section-title">対応資格一覧</h2>
+  <p class="section-sub">急成長するAI・データサイエンス分野の主要資格をカバー。需要の高い資格に絞って効率よく学べます。</p>
+
+  <div class="shikaku-grid">
+    <div class="shikaku-card reveal">
+      <div class="card-icon" style="background:rgba(0,229,255,0.1)">🤖</div>
+      <span class="card-tag tag-hot">HOT</span>
+      <h3 class="card-title">G検定</h3>
+      <p class="card-sub">ディープラーニングの基礎知識を問う入門資格。エンジニア以外にも人気急上昇中。</p>
+      <div class="card-meta">
+        <span>過去問 <strong>1,200問</strong></span>
+        <span>合格率 <strong>64%</strong></span>
+      </div>
+    </div>
+
+    <div class="shikaku-card reveal">
+      <div class="card-icon" style="background:rgba(124,58,237,0.15)">📊</div>
+      <span class="card-tag tag-new">NEW</span>
+      <h3 class="card-title">DS検定</h3>
+      <p class="card-sub">データサイエンティストとして必要な知識・スキルを証明。統計・Python・機械学習をカバー。</p>
+      <div class="card-meta">
+        <span>過去問 <strong>800問</strong></span>
+        <span>合格率 <strong>48%</strong></span>
+      </div>
+    </div>
+
+    <div class="shikaku-card reveal">
+      <div class="card-icon" style="background:rgba(16,185,129,0.1)">🏆</div>
+      <span class="card-tag tag-popular">POPULAR</span>
+      <h3 class="card-title">AI検定</h3>
+      <p class="card-sub">ビジネスでのAI活用を証明する資格。2024年の人気急上昇ランキング1位を獲得。</p>
+      <div class="card-meta">
+        <span>過去問 <strong>600問</strong></span>
+        <span>合格率 <strong>71%</strong></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="roadmap-section" id="roadmap">
+  <p class="section-label">ROADMAP</p>
+  <h2 class="section-title">G検定 合格ロードマップ</h2>
+  <p class="section-sub">あなたの目標日を入力するだけで、AIが最適な学習スケジュールを自動生成します。</p>
+
+  <div class="roadmap-steps">
+    <div class="roadmap-line"></div>
+
+    <div class="roadmap-step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <p class="step-period">WEEK 1–2</p>
+        <h3 class="step-title">AI・機械学習の基礎を掴む</h3>
+        <p class="step-desc">AIとは何か、機械学習・ディープラーニングの違いを理解。難しい数式は不要です。</p>
+        <div class="step-tags">
+          <span class="step-tag">AI概論</span>
+          <span class="step-tag">機械学習</span>
+          <span class="step-tag">動画5本</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <p class="step-period">WEEK 3–4</p>
+        <h3 class="step-title">ディープラーニングの仕組みを学ぶ</h3>
+        <p class="step-desc">ニューラルネットワーク、CNN、RNNなどの主要モデルとその応用事例を学習。</p>
+        <div class="step-tags">
+          <span class="step-tag">NN基礎</span>
+          <span class="step-tag">CNN/RNN</span>
+          <span class="step-tag">演習20問</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <p class="step-period">WEEK 5–6</p>
+        <h3 class="step-title">過去問で実戦力をつける</h3>
+        <p class="step-desc">1,200問以上の過去問をAIが解説。弱点を自動分析し、苦手分野を集中強化。</p>
+        <div class="step-tags">
+          <span class="step-tag">過去問演習</span>
+          <span class="step-tag">弱点AI分析</span>
+          <span class="step-tag">模擬試験</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="roadmap-step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <p class="step-period">WEEK 7</p>
+        <h3 class="step-title">直前対策・総仕上げ</h3>
+        <p class="step-desc">頻出テーマの最終確認と模擬試験2回分でコンディションを整え、本番に備えます。</p>
+        <div class="step-tags">
+          <span class="step-tag">頻出テーマ</span>
+          <span class="step-tag">模擬試験×2</span>
+          <span class="step-tag">直前チェック</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI FEATURE -->
+<section class="ai-section" id="ai">
+  <p class="section-label">AI TUTOR</p>
+  <h2 class="section-title">24時間対応のAI講師</h2>
+  <p class="section-sub">わからない問題をすぐに質問。AIが初心者にもわかりやすく解説します。</p>
+
+  <div class="ai-grid">
+    <div class="ai-features">
+      <div class="ai-feature reveal">
+        <div class="feat-icon" style="background:rgba(0,229,255,0.1)">💬</div>
+        <div>
+          <h4 class="feat-title">AIチャットで即解決</h4>
+          <p class="feat-desc">過去問の解説から概念の質問まで、いつでもAIが丁寧に回答。独学の孤独感をゼロに。</p>
+        </div>
+      </div>
+      <div class="ai-feature reveal">
+        <div class="feat-icon" style="background:rgba(124,58,237,0.15)">📅</div>
+        <div>
+          <h4 class="feat-title">スケジュール自動生成</h4>
+          <p class="feat-desc">試験日と1日の学習時間を入力するだけで、AIが最適なスケジュールを自動作成。</p>
+        </div>
+      </div>
+      <div class="ai-feature reveal">
+        <div class="feat-icon" style="background:rgba(16,185,129,0.1)">📈</div>
+        <div>
+          <h4 class="feat-title">弱点の自動分析</h4>
+          <p class="feat-desc">回答データからあなたの苦手分野をAIが特定。効率よく合格点を目指せます。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-chat-mockup">
+      <div class="chat-header">
+        <div class="chat-avatar">🤖</div>
+        <div>
+          <div class="chat-name">AI講師 AIRA</div>
+          <div class="chat-status">● オンライン</div>
+        </div>
+      </div>
+      <div class="chat-body">
+        <div class="msg user">
+          <div class="msg-avatar">👤</div>
+          <div class="msg-bubble">「過学習」ってどういう意味ですか？</div>
+        </div>
+        <div class="msg ai">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-bubble">
+            いい質問です！<br><br>
+            過学習とは、AIモデルが訓練データを<strong>覚えすぎてしまい</strong>、新しいデータに対してうまく機能しなくなる状態のことです。<br><br>
+            例えば、テスト問題を全部暗記したけど、少し違う問題が出たら解けない…そんな状態です 📚
+          </div>
+        </div>
+        <div class="msg user">
+          <div class="msg-avatar">👤</div>
+          <div class="msg-bubble">なるほど！どうやって防ぐの？</div>
+        </div>
+        <div class="msg ai">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-bubble">
+            <div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <p class="section-label">PRICING</p>
+  <h2 class="section-title">シンプルな料金プラン</h2>
+  <p class="section-sub">まずは無料で始めて、必要に応じてアップグレード。</p>
+
+  <div class="pricing-grid">
+    <div class="pricing-card reveal">
+      <p class="plan-name">フリー</p>
+      <p class="plan-desc">まず試してみたい方に</p>
+      <p class="plan-price">¥0<span>/月</span></p>
+      <p class="plan-period">クレジットカード不要</p>
+      <ul class="plan-features">
+        <li>過去問 100問まで</li>
+        <li>ロードマップ閲覧</li>
+        <li class="disabled">AIチャット解説</li>
+        <li class="disabled">スケジュール自動生成</li>
+        <li class="disabled">弱点分析レポート</li>
+      </ul>
+      <button class="btn-ghost" style="width:100%">無料で始める</button>
+    </div>
+
+    <div class="pricing-card featured reveal">
+      <span class="plan-badge">POPULAR</span>
+      <p class="plan-name">プロ</p>
+      <p class="plan-desc">本気で合格を目指す方に</p>
+      <p class="plan-price">¥980<span>/月</span></p>
+      <p class="plan-period">年払いで2ヶ月分お得</p>
+      <ul class="plan-features">
+        <li>過去問 全問無制限</li>
+        <li>ロードマップ閲覧</li>
+        <li>AIチャット解説 無制限</li>
+        <li>スケジュール自動生成</li>
+        <li>弱点分析レポート</li>
+      </ul>
+      <button class="btn-primary" style="width:100%">今すぐ始める</button>
+    </div>
+
+    <div class="pricing-card reveal">
+      <p class="plan-name">チーム</p>
+      <p class="plan-desc">企業・チームでの研修に</p>
+      <p class="plan-price">¥4,800<span>/月</span></p>
+      <p class="plan-period">5名まで利用可能</p>
+      <ul class="plan-features">
+        <li>プロプランの全機能</li>
+        <li>管理者ダッシュボード</li>
+        <li>進捗一括管理</li>
+        <li>チーム学習レポート</li>
+        <li>専用サポート</li>
+      </ul>
+      <button class="btn-ghost" style="width:100%">お問い合わせ</button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <p class="section-label">GET STARTED</p>
+  <h2 class="section-title">今日から、<br>AI時代のキャリアを築こう。</h2>
+  <p class="section-sub" style="margin: 16px auto 40px; text-align:center; max-width:480px">無料登録でいますぐ過去問100問にアクセス。クレジットカード不要です。</p>
+  <button class="btn-primary" style="font-size:17px; padding:16px 48px">🚀 無料で学習を始める</button>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">AI<span>資格</span>LAB</div>
+  <p class="footer-copy">© 2026 AI資格LAB. All rights reserved.</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>
