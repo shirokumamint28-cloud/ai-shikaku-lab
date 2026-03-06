@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>過去問クイズ | AI資格LAB</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --surface: #0d1117;
+    --surface2: #161b27;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --glow: 0 0 30px rgba(0,229,255,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(5,8,16,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,229,255,0.1);
+    padding: 0 40px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-decoration: none;
+  }
+
+  .logo span { color: var(--text); }
+
+  .nav-back {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+  }
+
+  .nav-back:hover { color: var(--accent); }
+
+  /* MAIN */
+  .main {
+    position: relative;
+    z-index: 1;
+    padding: 100px 20px 60px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* START SCREEN */
+  .start-screen {
+    text-align: center;
+    padding: 60px 20px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .start-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 32px;
+  }
+
+  .start-title {
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .start-title span {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .start-sub {
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1.8;
+    margin-bottom: 48px;
+  }
+
+  .start-info {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 48px;
+  }
+
+  .info-item {
+    text-align: center;
+  }
+
+  .info-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .info-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .btn-start {
+    background: var(--accent);
+    color: var(--bg);
+    padding: 16px 48px;
+    border-radius: 8px;
+    font-size: 17px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .btn-start:hover {
+    box-shadow: 0 0 40px rgba(0,229,255,0.5);
+    transform: translateY(-2px);
+  }
+
+  /* QUIZ SCREEN */
+  .quiz-screen { display: none; animation: fadeUp 0.4s ease both; }
+  .quiz-screen.active { display: block; }
+
+  /* PROGRESS */
+  .progress-bar-wrap {
+    margin-bottom: 32px;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .progress-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  .progress-score {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 100px;
+    transition: width 0.5s ease;
+  }
+
+  /* QUESTION CARD */
+  .question-card {
+    background: var(--surface2);
+    border: 1px solid rgba(0,229,255,0.1);
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .question-category {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.15);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 20px;
+  }
+
+  .question-text {
+    font-size: clamp(16px, 2.5vw, 20px);
+    font-weight: 700;
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+
+  /* OPTIONS */
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .option-btn {
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 18px 24px;
+    text-align: left;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: rgba(0,229,255,0.3);
+    background: rgba(0,229,255,0.05);
+    transform: translateX(4px);
+  }
+
+  .option-btn:disabled { cursor: default; }
+
+  .option-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 700;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .option-btn.correct {
+    border-color: var(--accent3);
+    background: rgba(16,185,129,0.1);
+    animation: correctPulse 0.4s ease;
+  }
+
+  .option-btn.correct .option-label {
+    background: var(--accent3);
+    border-color: var(--accent3);
+    color: var(--bg);
+  }
+
+  .option-btn.wrong {
+    border-color: var(--danger);
+    background: rgba(239,68,68,0.08);
+    animation: wrongShake 0.4s ease;
+  }
+
+  .option-btn.wrong .option-label {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: white;
+  }
+
+  .option-btn.reveal-correct {
+    border-color: var(--accent3);
+    background: rgba(16,185,129,0.05);
+    opacity: 0.7;
+  }
+
+  .option-btn.reveal-correct .option-label {
+    background: rgba(16,185,129,0.2);
+    border-color: var(--accent3);
+    color: var(--accent3);
+  }
+
+  @keyframes correctPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes wrongShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+
+  /* EXPLANATION */
+  .explanation {
+    display: none;
+    background: rgba(0,229,255,0.04);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .explanation.show { display: block; }
+
+  .explanation-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .explanation-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .explanation-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .explanation-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  .explanation-text strong { color: var(--text); }
+
+  /* RESULT BADGE */
+  .result-badge {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    font-size: 16px;
+    font-weight: 700;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .result-badge.show { display: flex; }
+  .result-badge.correct-badge { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--accent3); }
+  .result-badge.wrong-badge { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--danger); }
+
+  /* NEXT BTN */
+  .btn-next {
+    width: 100%;
+    background: var(--accent);
+    color: var(--bg);
+    padding: 16px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+    display: none;
+  }
+
+  .btn-next.show { display: block; }
+  .btn-next:hover { box-shadow: 0 0 30px rgba(0,229,255,0.4); transform: translateY(-2px); }
+
+  /* RESULT SCREEN */
+  .result-screen {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .result-screen.active { display: block; }
+
+  .result-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) 0%, var(--accent2) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 32px;
+    position: relative;
+    animation: spinIn 0.8s ease both;
+  }
+
+  .result-circle::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background: var(--bg);
+  }
+
+  .result-circle-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .result-percent {
+    font-family: 'Space Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .result-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  @keyframes spinIn {
+    from { transform: scale(0) rotate(-180deg); opacity: 0; }
+    to { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .result-title {
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 12px;
+  }
+
+  .result-sub {
+    color: var(--text-muted);
+    font-size: 16px;
+    margin-bottom: 40px;
+    line-height: 1.7;
+  }
+
+  .result-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  .result-stat {
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 20px 32px;
+    min-width: 120px;
+  }
+
+  .result-stat-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .result-stat-label { font-size: 12px; color: var(--text-muted); }
+
+  .btn-retry {
+    background: var(--accent);
+    color: var(--bg);
+    padding: 14px 40px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+    margin-right: 12px;
+  }
+
+  .btn-retry:hover { box-shadow: 0 0 30px rgba(0,229,255,0.4); transform: translateY(-2px); }
+
+  .btn-home {
+    background: transparent;
+    color: var(--text-muted);
+    padding: 14px 40px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .btn-home:hover { border-color: var(--accent); color: var(--accent); }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+  @media (max-width: 600px) {
+    nav { padding: 0 20px; }
+    .question-card { padding: 24px; }
+    .start-info { gap: 24px; }
+    .result-stats { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">AI<span>資格</span>LAB</a>
+  <a href="index.html" class="nav-back">← トップに戻る</a>
+</nav>
+
+<div class="main">
+
+  <!-- START SCREEN -->
+  <div class="start-screen" id="startScreen">
+    <div class="start-badge">📝 G検定 過去問チャレンジ</div>
+    <h1 class="start-title">実力を<span>試そう</span></h1>
+    <p class="start-sub">
+      G検定の頻出問題に挑戦！<br>
+      全問に丁寧な解説つきで、解きながら学べます。
+    </p>
+    <div class="start-info">
+      <div class="info-item">
+        <div class="info-num">10</div>
+        <div class="info-label">問題数</div>
+      </div>
+      <div class="info-item">
+        <div class="info-num">4択</div>
+        <div class="info-label">形式</div>
+      </div>
+      <div class="info-item">
+        <div class="info-num">解説</div>
+        <div class="info-label">全問つき</div>
+      </div>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">🚀 クイズを始める</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div class="quiz-screen" id="quizScreen">
+
+    <!-- Progress -->
+    <div class="progress-bar-wrap">
+      <div class="progress-meta">
+        <span class="progress-label" id="progressLabel">QUESTION 1 / 10</span>
+        <span class="progress-score" id="progressScore">正解: 0問</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:10%"></div>
+      </div>
+    </div>
+
+    <!-- Question -->
+    <div class="question-card">
+      <span class="question-category" id="questionCategory">AI概論</span>
+      <p class="question-text" id="questionText"></p>
+    </div>
+
+    <!-- Result Badge -->
+    <div class="result-badge" id="resultBadge"></div>
+
+    <!-- Options -->
+    <div class="options" id="optionsContainer"></div>
+
+    <!-- Explanation -->
+    <div class="explanation" id="explanation">
+      <div class="explanation-header">
+        <div class="explanation-icon">💡</div>
+        <span class="explanation-label">解説</span>
+      </div>
+      <p class="explanation-text" id="explanationText"></p>
+    </div>
+
+    <!-- Next Button -->
+    <button class="btn-next" id="nextBtn" onclick="nextQuestion()">次の問題へ →</button>
+
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div class="result-screen" id="resultScreen">
+    <div class="result-circle">
+      <div class="result-circle-inner">
+        <div class="result-percent" id="resultPercent">0%</div>
+        <div class="result-label">正答率</div>
+      </div>
+    </div>
+    <h2 class="result-title" id="resultTitle"></h2>
+    <p class="result-sub" id="resultSub"></p>
+    <div class="result-stats">
+      <div class="result-stat">
+        <div class="result-stat-num" id="statCorrect" style="color:var(--accent3)">0</div>
+        <div class="result-stat-label">正解</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-stat-num" id="statWrong" style="color:var(--danger)">0</div>
+        <div class="result-stat-label">不正解</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-stat-num" style="color:var(--accent)">10</div>
+        <div class="result-stat-label">合計問題数</div>
+      </div>
+    </div>
+    <button class="btn-retry" onclick="retryQuiz()">🔄 もう一度挑戦</button>
+    <button class="btn-home" onclick="goHome()">🏠 トップへ</button>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    category: "AI概論",
+    question: "機械学習の中で、正解ラベルを使って学習する手法を何と呼ぶか？",
+    options: ["強化学習", "教師あり学習", "教師なし学習", "転移学習"],
+    correct: 1,
+    explanation: "<strong>教師あり学習</strong>は、入力データと正解ラベル（答え）のペアを使って学習する手法です。スパムメール分類や画像認識などに使われます。教師なし学習は正解ラベルなし、強化学習は報酬を使って学習します。"
+  },
+  {
+    category: "ディープラーニング",
+    question: "ディープラーニングで画像認識に最もよく使われるネットワーク構造はどれか？",
+    options: ["RNN（再帰型ニューラルネットワーク）", "GAN（敵対的生成ネットワーク）", "CNN（畳み込みニューラルネットワーク）", "Transformer"],
+    correct: 2,
+    explanation: "<strong>CNN（畳み込みニューラルネットワーク）</strong>は、画像の特徴を効率的に抽出できるため、画像認識・物体検出などで広く使われます。RNNは時系列データ、Transformerは自然言語処理に強みがあります。"
+  },
+  {
+    category: "AI概論",
+    question: "次のうち「過学習（オーバーフィッティング）」の説明として正しいものはどれか？",
+    options: [
+      "モデルが訓練データに対しても精度が低い状態",
+      "モデルが訓練データに対して精度が高いが、未知データへの精度が低い状態",
+      "モデルが全てのデータに対して精度が高い状態",
+      "学習率が大きすぎて損失が収束しない状態"
+    ],
+    correct: 1,
+    explanation: "<strong>過学習</strong>とは、モデルが訓練データを「丸暗記」してしまい、新しいデータに対してうまく機能しなくなる状態です。ドロップアウトや正則化などの手法で防ぎます。"
+  },
+  {
+    category: "機械学習",
+    question: "次のうち「教師なし学習」の代表的なアルゴリズムはどれか？",
+    options: ["線形回帰", "決定木", "k-means クラスタリング", "サポートベクターマシン"],
+    correct: 2,
+    explanation: "<strong>k-meansクラスタリング</strong>は、ラベルなしのデータをk個のグループに自動分類する教師なし学習の代表例です。顧客セグメンテーションや異常検知などに使われます。"
+  },
+  {
+    category: "自然言語処理",
+    question: "GPTやClaude等の大規模言語モデルの基盤となっているアーキテクチャはどれか？",
+    options: ["CNN", "RNN", "Transformer", "オートエンコーダ"],
+    correct: 2,
+    explanation: "<strong>Transformer</strong>は2017年にGoogleが発表したアーキテクチャで、Attention機構を使って文脈を理解します。GPT・Claude・Geminiなど現代の大規模言語モデルの基盤です。"
+  },
+  {
+    category: "AI倫理",
+    question: "AIの「説明可能性（XAI）」が重要視される主な理由として最も適切なものはどれか？",
+    options: [
+      "AIの処理速度を上げるため",
+      "AIがなぜその判断をしたか人間が理解できるようにするため",
+      "AIの学習コストを下げるため",
+      "データ量を削減するため"
+    ],
+    correct: 1,
+    explanation: "<strong>説明可能AI（XAI）</strong>は、AIの判断根拠を人間が理解できるようにする技術・概念です。医療診断や融資審査など重要な意思決定にAIを使う場合、「なぜその判断をしたか」が求められます。"
+  },
+  {
+    category: "ディープラーニング",
+    question: "ニューラルネットワークの学習において、誤差を逆方向に伝播させてパラメータを更新する手法を何と呼ぶか？",
+    options: ["順伝播（フォワードプロパゲーション）", "逆伝播（バックプロパゲーション）", "ドロップアウト", "バッチ正規化"],
+    correct: 1,
+    explanation: "<strong>逆伝播（バックプロパゲーション）</strong>は、出力の誤差を出力層から入力層に向けて逆方向に伝え、各層のパラメータ（重み）を更新する手法です。ニューラルネットワーク学習の核心です。"
+  },
+  {
+    category: "機械学習",
+    question: "機械学習において、データを学習用・検証用・テスト用に分ける主な目的はどれか？",
+    options: [
+      "データの保存容量を節約するため",
+      "学習を並列処理で高速化するため",
+      "モデルの汎化性能を正しく評価するため",
+      "データの前処理を簡略化するため"
+    ],
+    correct: 2,
+    explanation: "データを分割する主目的は<strong>汎化性能の正しい評価</strong>です。学習データだけで評価すると過学習を見抜けません。テストデータは最終評価のみに使い、検証データはハイパーパラメータ調整に使います。"
+  },
+  {
+    category: "AI応用",
+    question: "転移学習（Transfer Learning）の説明として最も正しいものはどれか？",
+    options: [
+      "複数のモデルを組み合わせて精度を上げる手法",
+      "別のタスクで学習済みの知識を新しいタスクに活用する手法",
+      "データを水増しして学習データを増やす手法",
+      "モデルを小型化して推論速度を上げる手法"
+    ],
+    correct: 1,
+    explanation: "<strong>転移学習</strong>は、大量データで事前学習したモデルの知識を別のタスクに転用する手法です。少ないデータでも高精度なモデルを作れます。GPTなどの基盤モデルをファインチューニングするのが代表例です。"
+  },
+  {
+    category: "AI概論",
+    question: "シンギュラリティ（技術的特異点）とはどのような概念か？",
+    options: [
+      "AIが人間の知能を超え、AIが自律的に自己改善を繰り返す転換点",
+      "機械学習モデルの精度が100%に達すること",
+      "量子コンピュータが実用化される時点",
+      "インターネット上の全データをAIが学習完了した状態"
+    ],
+    correct: 0,
+    explanation: "<strong>シンギュラリティ</strong>はレイ・カーツワイルが提唱した概念で、AIが人間の知能を超えて自律的に自己改善を繰り返す転換点を指します。G検定では頻出の重要用語です。"
+  }
+];
+
+let currentQ = 0;
+let score = 0;
+let answered = false;
+
+function startQuiz() {
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('quizScreen').classList.add('active');
+  showQuestion();
+}
+
+function showQuestion() {
+  answered = false;
+  const q = questions[currentQ];
+
+  document.getElementById('progressLabel').textContent = `QUESTION ${currentQ + 1} / ${questions.length}`;
+  document.getElementById('progressScore').textContent = `正解: ${score}問`;
+  document.getElementById('progressFill').style.width = `${((currentQ + 1) / questions.length) * 100}%`;
+  document.getElementById('questionCategory').textContent = q.category;
+  document.getElementById('questionText').textContent = q.question;
+
+  const labels = ['A', 'B', 'C', 'D'];
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-label">${labels[i]}</span>${opt}`;
+    btn.onclick = () => selectAnswer(i);
+    container.appendChild(btn);
+  });
+
+  document.getElementById('resultBadge').className = 'result-badge';
+  document.getElementById('explanation').className = 'explanation';
+  document.getElementById('nextBtn').className = 'btn-next';
+}
+
+function selectAnswer(selected) {
+  if (answered) return;
+  answered = true;
+
+  const q = questions[currentQ];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(btn => btn.disabled = true);
+
+  const badge = document.getElementById('resultBadge');
+  const explanation = document.getElementById('explanation');
+  const nextBtn = document.getElementById('nextBtn');
+
+  if (selected === q.correct) {
+    score++;
+    btns[selected].classList.add('correct');
+    badge.className = 'result-badge correct-badge show';
+    badge.innerHTML = '✅ 正解！すばらしい！';
+  } else {
+    btns[selected].classList.add('wrong');
+    btns[q.correct].classList.add('reveal-correct');
+    badge.className = 'result-badge wrong-badge show';
+    badge.innerHTML = `❌ 不正解… 正解は「${['A','B','C','D'][q.correct]}」です`;
+  }
+
+  document.getElementById('explanationText').innerHTML = q.explanation;
+  explanation.classList.add('show');
+  nextBtn.classList.add('show');
+  nextBtn.textContent = currentQ < questions.length - 1 ? '次の問題へ →' : '結果を見る 🎉';
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showResult();
+  } else {
+    showQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('quizScreen').classList.remove('active');
+  const resultScreen = document.getElementById('resultScreen');
+  resultScreen.classList.add('active');
+
+  const percent = Math.round((score / questions.length) * 100);
+  document.getElementById('resultPercent').textContent = `${percent}%`;
+  document.getElementById('statCorrect').textContent = score;
+  document.getElementById('statWrong').textContent = questions.length - score;
+
+  let title, sub;
+  if (percent >= 80) {
+    title = '🏆 優秀！合格圏内です！';
+    sub = 'この調子で過去問を続ければ、G検定合格はもうすぐです！\n苦手分野をさらに強化しましょう。';
+  } else if (percent >= 60) {
+    title = '💪 もう少し！あと一歩！';
+    sub = '基礎はできています！間違えた問題の解説を読み返して、\n苦手分野を重点的に復習しましょう。';
+  } else {
+    title = '📚 基礎から固めよう！';
+    sub = '焦らなくて大丈夫です！ロードマップに沿って\n基礎から丁寧に学習を進めましょう。';
+  }
+
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultSub').textContent = sub;
+}
+
+function retryQuiz() {
+  currentQ = 0;
+  score = 0;
+  document.getElementById('resultScreen').classList.remove('active');
+  document.getElementById('quizScreen').classList.add('active');
+  showQuestion();
+}
+
+function goHome() {
+  window.location.href = 'index.html';
+}
+</script>
+
+</body>
+</html>
