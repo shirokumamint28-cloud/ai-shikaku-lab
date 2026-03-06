@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ログイン | AI資格LAB</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #050810;
+    --surface: #0d1117;
+    --surface2: #161b27;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --glow: 0 0 30px rgba(0,229,255,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .card {
+    background: var(--surface2);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 24px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 440px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 60px rgba(0,229,255,0.06);
+    animation: fadeUp 0.6s ease both;
+  }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 32px;
+    text-decoration: none;
+    display: block;
+  }
+
+  .logo span { color: var(--text); }
+
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 32px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-muted);
+    border: none;
+    background: transparent;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .form { display: flex; flex-direction: column; gap: 16px; }
+  .form.hidden { display: none; }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: 'Noto Sans JP', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus {
+    border-color: rgba(0,229,255,0.4);
+    box-shadow: 0 0 20px rgba(0,229,255,0.06);
+  }
+
+  .btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+    margin-top: 8px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .btn-primary:hover {
+    box-shadow: var(--glow);
+    transform: translateY(-2px);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .divider span { font-size: 12px; color: var(--text-muted); }
+
+  .btn-github {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn-github:hover {
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.05);
+  }
+
+  .alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+    display: none;
+  }
+
+  .alert.show { display: block; }
+  .alert.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--accent3); }
+  .alert.error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--danger); }
+
+  /* LOGGED IN STATE */
+  .logged-in {
+    display: none;
+    text-align: center;
+  }
+
+  .logged-in.show { display: block; }
+
+  .user-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 16px;
+    box-shadow: 0 0 30px rgba(0,229,255,0.2);
+  }
+
+  .user-email {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .user-plan {
+    display: inline-block;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    color: var(--accent);
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    padding: 4px 14px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    letter-spacing: 2px;
+  }
+
+  .menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .menu-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 14px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .menu-link:hover {
+    border-color: rgba(0,229,255,0.2);
+    background: rgba(0,229,255,0.04);
+  }
+
+  .menu-link-icon { font-size: 20px; }
+
+  .btn-logout {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(239,68,68,0.3);
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .btn-logout:hover {
+    background: rgba(239,68,68,0.1);
+    border-color: var(--danger);
+  }
+
+  @media (max-width: 480px) {
+    .card { padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <a href="index.html" class="logo">AI<span>資格</span>LAB</a>
+
+  <!-- ログイン済み表示 -->
+  <div class="logged-in" id="loggedInView">
+    <div class="user-avatar">👤</div>
+    <p style="font-size:20px; font-weight:900; margin-bottom:8px">ようこそ！</p>
+    <p class="user-email" id="userEmail"></p>
+    <div class="user-plan" id="userPlan">FREE PLAN</div>
+    <div class="menu-links">
+      <a href="quiz.html" class="menu-link">
+        <span class="menu-link-icon">📝</span>
+        <span>過去問クイズに挑戦</span>
+      </a>
+      <a href="ai-tutor.html" class="menu-link">
+        <span class="menu-link-icon">🤖</span>
+        <span>AI講師AIRAに質問</span>
+      </a>
+      <div class="menu-link" onclick="showUpgrade()">
+        <span class="menu-link-icon">⭐</span>
+        <span>プロプランにアップグレード</span>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">ログアウト</button>
+  </div>
+
+  <!-- 未ログイン表示 -->
+  <div id="authView">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">ログイン</button>
+      <button class="tab" onclick="switchTab('signup')">新規登録</button>
+    </div>
+
+    <!-- ログインフォーム -->
+    <div class="form" id="loginForm">
+      <div class="alert" id="loginAlert"></div>
+      <div class="field">
+        <label>メールアドレス</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" />
+      </div>
+      <div class="field">
+        <label>パスワード</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" />
+      </div>
+      <button class="btn btn-primary" id="loginBtn" onclick="login()">
+        ログイン
+      </button>
+      <div class="divider"><span>または</span></div>
+      <button class="btn btn-github" onclick="loginWithGitHub()">
+        <span>🐙</span> GitHubでログイン
+      </button>
+    </div>
+
+    <!-- 新規登録フォーム -->
+    <div class="form hidden" id="signupForm">
+      <div class="alert" id="signupAlert"></div>
+      <div class="field">
+        <label>メールアドレス</label>
+        <input type="email" id="signupEmail" placeholder="your@email.com" />
+      </div>
+      <div class="field">
+        <label>パスワード（6文字以上）</label>
+        <input type="password" id="signupPassword" placeholder="••••••••" />
+      </div>
+      <button class="btn btn-primary" id="signupBtn" onclick="signup()">
+        無料で登録する
+      </button>
+      <div class="divider"><span>または</span></div>
+      <button class="btn btn-github" onclick="loginWithGitHub()">
+        <span>🐙</span> GitHubで登録
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==============================
+  // ⚠️ ここにSupabaseの情報を入力！
+  // ==============================
+  const SUPABASE_URL = 'https://doipewpwppkzmkhmlwiv.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvaXBld3B3cHBrem1raG1sd2l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3OTYzNzQsImV4cCI6MjA4ODM3MjM3NH0.uNwvivzGcbmL7EB7AR4HGEtc4ITnLT3m2kr7qynvIfs';
+  // ==============================
+
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // タブ切り替え
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('signupForm').classList.toggle('hidden', tab !== 'signup');
+  }
+
+  // アラート表示
+  function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = `alert ${type} show`;
+  }
+
+  // ログイン済み確認
+  async function checkSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) showLoggedIn(session.user);
+  }
+
+  // ログイン済み画面表示
+  function showLoggedIn(user) {
+    document.getElementById('authView').style.display = 'none';
+    document.getElementById('loggedInView').classList.add('show');
+    document.getElementById('userEmail').textContent = user.email;
+  }
+
+  // メールログイン
+  async function login() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const btn = document.getElementById('loginBtn');
+
+    if (!email || !password) {
+      showAlert('loginAlert', '⚠️ メールとパスワードを入力してください', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'ログイン中...';
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      showAlert('loginAlert', '❌ ' + (error.message === 'Invalid login credentials' ? 'メールまたはパスワードが間違っています' : error.message), 'error');
+      btn.disabled = false;
+      btn.textContent = 'ログイン';
+    } else {
+      showLoggedIn(data.user);
+    }
+  }
+
+  // 新規登録
+  async function signup() {
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const btn = document.getElementById('signupBtn');
+
+    if (!email || !password) {
+      showAlert('signupAlert', '⚠️ メールとパスワードを入力してください', 'error');
+      return;
+    }
+
+    if (password.length < 6) {
+      showAlert('signupAlert', '⚠️ パスワードは6文字以上にしてください', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '登録中...';
+
+    const { data, error } = await sb.auth.signUp({ email, password });
+
+    if (error) {
+      showAlert('signupAlert', '❌ ' + error.message, 'error');
+      btn.disabled = false;
+      btn.textContent = '無料で登録する';
+    } else {
+      showAlert('signupAlert', '✅ 確認メールを送りました！メールを開いてリンクをクリックしてください。', 'success');
+      btn.disabled = false;
+      btn.textContent = '無料で登録する';
+    }
+  }
+
+  // GitHubログイン
+  async function loginWithGitHub() {
+    await sb.auth.signInWithOAuth({
+      provider: 'github',
+      options: { redirectTo: window.location.href }
+    });
+  }
+
+  // ログアウト
+  async function logout() {
+    await sb.auth.signOut();
+    document.getElementById('authView').style.display = 'block';
+    document.getElementById('loggedInView').classList.remove('show');
+  }
+
+  // アップグレード（次のステップで実装）
+  function showUpgrade() {
+    alert('💳 Stripe決済機能は次のステップで実装します！');
+  }
+
+  // 起動時にセッション確認
+  checkSession();
+</script>
+
+</body>
+</html>
